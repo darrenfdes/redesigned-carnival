@@ -218,4 +218,3 @@ bucket_name=
 
 📧 **Email**: [nextgenailabs99@gmail.com](mailto:nextgenailabs99@gmail.com)
 
-# redesigned-carnival
