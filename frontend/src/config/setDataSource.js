@@ -2,7 +2,7 @@ import CSVSvg from "../assets/csv.svg";
 import SQLSvg from "../assets/sql.svg";
 import PDFSvg from "../assets/pdf.svg"
 import WEBSvg from "../assets/web.svg"
-import AudioSvg from "../assets/audio.svg"
+// import AudioSvg from "../assets/audio.svg"
 import IMGSvg from '../assets/img.svg';
 import MDSvg from "../assets/md.svg"
 import HTMLSvg from "../assets/html.svg"
@@ -33,66 +33,66 @@ const setDataSource = (data) => {
 				title: "Source",
 				content: data.content
 			}
-		case ("web"):
-			return {
-				img: WEBSvg,
-				title: "Url",
-				content: data.content
-			}
-		case ("audio"):
-			return {
-				img: AudioSvg,
-				title: "Source",
-				content: data.content
-			}
-		case ("md"):
-			return {
-				img: MDSvg,
-				title: "Source",
-				content: data.content
-			}
-		case ("youtube"):
-			return {
-				img: YOUTUBESvg,
-				title: "Source",
-				content: data.content
-			}
-		case ("img"):
-			return {
-				img: IMGSvg,
-				title: "Source",
-				content: data.content
-			}
+		// case ("web"):
+		// 	return {
+		// 		img: WEBSvg,
+		// 		title: "Url",
+		// 		content: data.content
+		// 	}
+		// case ("audio"):
+		// 	return {
+		// 		img: AudioSvg,
+		// 		title: "Source",
+		// 		content: data.content
+		// 	}
+		// case ("md"):
+		// 	return {
+		// 		img: MDSvg,
+		// 		title: "Source",
+		// 		content: data.content
+		// 	}
+		// case ("youtube"):
+		// 	return {
+		// 		img: YOUTUBESvg,
+		// 		title: "Source",
+		// 		content: data.content
+		// 	}
+		// case ("img"):
+		// 	return {
+		// 		img: IMGSvg,
+		// 		title: "Source",
+		// 		content: data.content
+		// 	}
 		case ("docx"):
 			return {
 				img: DOCXSvg,
 				title: "Source",
 				content: data.content
 			}
-		case ("pptx"):
-			return {
-				img: PPTXSvg,
-				title: "source",
-				content: data.content
-			}
-		case ("txt"):
-			return {
-				img: TXTSvg,
-				title: "source",
-				content: data.content
-			}
-		case ("html"):
-			return {
-				img: HTMLSvg,
-				title: "source",
-				content: data.content
-			}
-		case ("video"):
-			return {
-				img: VIDEOSvg,
-				title: "source",
-				content: data.content
-			}
+		// case ("pptx"):
+		// 	return {
+		// 		img: PPTXSvg,
+		// 		title: "source",
+		// 		content: data.content
+		// 	}
+		// case ("txt"):
+		// 	return {
+		// 		img: TXTSvg,
+		// 		title: "source",
+		// 		content: data.content
+		// 	}
+		// case ("html"):
+		// 	return {
+		// 		img: HTMLSvg,
+		// 		title: "source",
+		// 		content: data.content
+		// 	}
+		// case ("video"):
+		// 	return {
+		// 		img: VIDEOSvg,
+		// 		title: "source",
+		// 		content: data.content
+		// 	}
 		default:
 	}
 }

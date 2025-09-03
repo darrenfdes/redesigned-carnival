@@ -27,51 +27,51 @@ const setRequestData = (component_name, flow_id, data) => {
 			webFormData.append("web_url", data.content)
 			return ["component-create-crawl", webFormData, "multipart/form-data"]
 			break;
-		case "audio":
-			const audioFormData = new FormData();
-			audioFormData.append("file", data.file)
-			audioFormData.append("flow_id", flow_id)
-			return ["component-create-audio", audioFormData, "multipart/form-data"]
+		// case "audio":
+		// 	const audioFormData = new FormData();
+		// 	audioFormData.append("file", data.file)
+		// 	audioFormData.append("flow_id", flow_id)
+		// 	return ["component-create-audio", audioFormData, "multipart/form-data"]
 		case "md":
 			const mdFormData = new FormData();
 			mdFormData.append("file", data.file)
 			mdFormData.append("flow_id", flow_id)
 			return ["component-create-md", mdFormData, "multipart/form-data"]
-		case "youtube":
-			const ytFormData = new FormData();
-			ytFormData.append("flow_id", flow_id)
-			ytFormData.append("youtube_url", data.content)
-			return ["component-create-youtube", ytFormData, "multipart/form-data"]
-		case "img":
-			const imageFormData = new FormData();
-			imageFormData.append("file", data.file)
-			imageFormData.append("flow_id", flow_id)
-			return ["component-create-img", imageFormData, "multipart/form-data"]
+		// case "youtube":
+		// 	const ytFormData = new FormData();
+		// 	ytFormData.append("flow_id", flow_id)
+		// 	ytFormData.append("youtube_url", data.content)
+		// 	return ["component-create-youtube", ytFormData, "multipart/form-data"]
+		// case "img":
+		// 	const imageFormData = new FormData();
+		// 	imageFormData.append("file", data.file)
+		// 	imageFormData.append("flow_id", flow_id)
+		// 	return ["component-create-img", imageFormData, "multipart/form-data"]
 		case "docx":
 			const docxFormData = new FormData();
 			docxFormData.append("file", data.file)
 			docxFormData.append("flow_id", flow_id)
 			return ["component-create-docx", docxFormData, "multipart/form-data"]
-		case "pptx":
-			const pptxFormData = new FormData();
-			pptxFormData.append("file", data.file)
-			pptxFormData.append("flow_id", flow_id)
-			return ["component-create-pptx", pptxFormData, "multipart/form-data"]
-		case "html":
-			const htmlFormData = new FormData();
-			htmlFormData.append("file", data.file)
-			htmlFormData.append("flow_id", flow_id)
-			return ["component-create-html", htmlFormData, "multipart/form-data"]
+		// case "pptx":
+		// 	const pptxFormData = new FormData();
+		// 	pptxFormData.append("file", data.file)
+		// 	pptxFormData.append("flow_id", flow_id)
+		// 	return ["component-create-pptx", pptxFormData, "multipart/form-data"]
+		// case "html":
+		// 	const htmlFormData = new FormData();
+		// 	htmlFormData.append("file", data.file)
+		// 	htmlFormData.append("flow_id", flow_id)
+		// 	return ["component-create-html", htmlFormData, "multipart/form-data"]
 		case "txt":
 			const txtFormData = new FormData();
 			txtFormData.append("file", data.file)
 			txtFormData.append("flow_id", flow_id)
 			return ["component-create-txt", txtFormData, "multipart/form-data"]
-		case "video":
-			const videoFormData = new FormData();
-			videoFormData.append("file", data.file)
-			videoFormData.append("flow_id", flow_id)
-			return ["component-create-video", videoFormData, "multipart/form-data"]
+		// case "video":
+		// 	const videoFormData = new FormData();
+		// 	videoFormData.append("file", data.file)
+		// 	videoFormData.append("flow_id", flow_id)
+		// 	return ["component-create-video", videoFormData, "multipart/form-data"]
 	}
 
 }
