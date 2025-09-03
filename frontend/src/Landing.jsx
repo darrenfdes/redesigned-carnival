@@ -15,27 +15,27 @@ import PPTXLogo from './assets/pptx.svg';
 import YTUBELogo from './assets/youtube.svg';
 import AUDIOLogo from './assets/audio.svg';
 import HTMLLogo from './assets/html.svg';
-import IMGLogo from './assets/img.svg';
-import FLOWEx from './assets/flow.svg';
-import SOURCESvg from './assets/playSource.svg';
-import QASvg from './assets/qaSvg.svg';
-import SUMMSvg from './assets/summ.svg';
-import video1 from './assets/video1.mp4';
-import video2 from './assets/video2.mp4';
-import video3 from './assets/video3.mp4';
+// import IMGLogo from './assets/img.svg';
+// import FLOWEx from './assets/flow.svg';
+// import SOURCESvg from './assets/playSource.svg';
+// import QASvg from './assets/qaSvg.svg';
+// import SUMMSvg from './assets/summ.svg';
+// import video1 from './assets/video1.mp4';
+// import video2 from './assets/video2.mp4';
+// import video3 from './assets/video3.mp4';
 import { LandingCards } from './global-components/LandingCards';
 import ExampleCards from './global-components/ExampleCards';
 import TestimonialCards from './global-components/TestimonialCards';
 import { useEffect, useState } from 'react';
 export const Landing = () => {
-    const [selectedVideo, setSelectedVideo] = useState('Sources')
+    const [selectedVideo, setSelectedVideo] = useState('Sources');
 
     const getVideo = () => {
-         if (selectedVideo === 'Sources') return video1;
-         if (selectedVideo === 'Multiple') return video2;
-         if (selectedVideo === 'Summary') return video3;
-         return null;
-     };
+        if (selectedVideo === 'Sources') return video1;
+        if (selectedVideo === 'Multiple') return video2;
+        if (selectedVideo === 'Summary') return video3;
+        return null;
+    };
 
     let video = getVideo();
 
@@ -96,28 +96,28 @@ export const Landing = () => {
                                 img={CSVLogo}
                                 data="CSV"
                             />
-                            <LandingCards
+                            {/* <LandingCards
                                 img={WEBLogo}
                                 data="WEB"
                             />
                             <LandingCards
                                 img={PPTXLogo}
                                 data="PPTX"
-                            />
-                            <LandingCards
+                            /> */}
+                            {/* <LandingCards
                                 img={TXTLogo}
                                 data="Text"
                             />
                             <LandingCards
                                 img={MDLogo}
                                 data="Markdown"
-                            />
-                            <LandingCards
+                            /> */}
+                            {/* <LandingCards
                                 img={AUDIOLogo}
                                 data="Audio"
-                            />
+                            /> */}
                         </div>
-                        <div>
+                       {/* <div>
                             <LandingCards
                                 img={VIDEOSLogo}
                                 data="Videos"
@@ -134,7 +134,7 @@ export const Landing = () => {
                                 img={IMGLogo}
                                 data="IMG"
                             />
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

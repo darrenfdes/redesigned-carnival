@@ -10,7 +10,7 @@ import HTMLSvg from "../assets/html.svg"
 import DOCXSvg from "../assets/docx.svg"
 import PPTXSvg from "../assets/pptx.svg"
 import TXTSvg from "../assets/text.svg"
-import VIDEOSvg from "../assets/video.svg"
+// import VIDEOSvg from "../assets/video.svg"
 import YOUTUBESvg from "../assets/youtube.svg"
 import flowStore from "../stores/flowStore";
 const DataSourceSelect = () => {
@@ -29,16 +29,16 @@ const DataSourceSelect = () => {
 				: null
 				}
 				<DataSourceSet data={{ img: PDFSvg, content: "PDF", name: "pdf" }} />
-				<DataSourceSet data={{ img: WEBSvg, content: "Enter Url", name: "web" }} />
-				<DataSourceSet data={{ img: AudioSvg, content: "Select Audio File", name: "audio" }} />
-				<DataSourceSet data={{ img: MDSvg, content: "Select MD File", name: "md" }} />
-				<DataSourceSet data={{ img: YOUTUBESvg, content: "Connect Youtube", name: 'youtube' }} />
-				<DataSourceSet data={{ img: IMGSvg, content: "Select Image file ", name: 'img' }} />
+				{/* <DataSourceSet data={{ img: WEBSvg, content: "Enter Url", name: "web" }} /> */}
+				{/* <DataSourceSet data={{ img: AudioSvg, content: "Select Audio File", name: "audio" }} /> */}
+				{/* <DataSourceSet data={{ img: MDSvg, content: "Select MD File", name: "md" }} /> */}
+				{/* <DataSourceSet data={{ img: YOUTUBESvg, content: "Connect Youtube", name: 'youtube' }} />
+				<DataSourceSet data={{ img: IMGSvg, content: "Select Image file ", name: 'img' }} /> */}
 				<DataSourceSet data={{ img: DOCXSvg, content: "Select Docx file ", name: 'docx' }} />
-				<DataSourceSet data={{ img: PPTXSvg, content: "Select PPTX file ", name: 'pptx' }} />
-				<DataSourceSet data={{ img: HTMLSvg, content: "Select HTML file ", name: 'html' }} />
-				<DataSourceSet data={{ img: TXTSvg, content: "Select TEXT file ", name: 'txt' }} />
-				<DataSourceSet data={{ img: VIDEOSvg, content: "Select VIDEO file ", name: 'video' }} />
+				{/* <DataSourceSet data={{ img: PPTXSvg, content: "Select PPTX file ", name: 'pptx' }} /> */}
+				{/* <DataSourceSet data={{ img: HTMLSvg, content: "Select HTML file ", name: 'html' }} /> */}
+				{/* <DataSourceSet data={{ img: TXTSvg, content: "Select TEXT file ", name: 'txt' }} /> */}
+				{/* <DataSourceSet data={{ img: VIDEOSvg, content: "Select VIDEO file ", name: 'video' }} /> */}
 			</div>
 		</div >
 	)

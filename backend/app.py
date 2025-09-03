@@ -1720,512 +1720,512 @@ async def create_img_component(flow_id: str = Form(...), file: UploadFile = File
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/component-create-audio")
-async def create_audio_component(
-    flow_id: str = Form(...), file: UploadFile = File(...)
-):
-    try:
-        flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
-        MAX_AUDIO_SIZE_MB = 16
-        ALLOWED_MIME_TYPES = {
-            "audio/wav",
-            "audio/mp3",
-            "audio/aiff",
-            "audio/aac",
-            "audio/ogg",
-            "audio/flac",
-            "audio/mpeg",
-        }
+# @app.post("/component-create-audio")
+# async def create_audio_component(
+#     flow_id: str = Form(...), file: UploadFile = File(...)
+# ):
+#     try:
+#         flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
+#         MAX_AUDIO_SIZE_MB = 16
+#         ALLOWED_MIME_TYPES = {
+#             "audio/wav",
+#             "audio/mp3",
+#             "audio/aiff",
+#             "audio/aac",
+#             "audio/ogg",
+#             "audio/flac",
+#             "audio/mpeg",
+#         }
 
-        if file.content_type not in ALLOWED_MIME_TYPES:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported audio file type: {file.content_type}",
-            )
+#         if file.content_type not in ALLOWED_MIME_TYPES:
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail=f"Unsupported audio file type: {file.content_type}",
+#             )
 
-        contents = await file.read()
-        size_in_mb = len(contents) / (1024 * 1024)
+#         contents = await file.read()
+#         size_in_mb = len(contents) / (1024 * 1024)
 
-        if size_in_mb > MAX_AUDIO_SIZE_MB:
-            raise HTTPException(status_code=400, detail="Audio exceeds 16MB size limit")
+#         if size_in_mb > MAX_AUDIO_SIZE_MB:
+#             raise HTTPException(status_code=400, detail="Audio exceeds 16MB size limit")
 
-        audio_base64 = base64.b64encode(contents).decode("utf-8")
+#         audio_base64 = base64.b64encode(contents).decode("utf-8")
         
-        if flow["flow_type"] == 'manual':
+#         if flow["flow_type"] == 'manual':
 
-            component_metadata = {
-                "flow_id": ObjectId(flow_id),
-                "name": file.filename,
-                "mime_type": file.content_type,
-                "type": "audio",
-                "base64_audio": audio_base64,
-                "processing_type": "gemini",
-            }
+#             component_metadata = {
+#                 "flow_id": ObjectId(flow_id),
+#                 "name": file.filename,
+#                 "mime_type": file.content_type,
+#                 "type": "audio",
+#                 "base64_audio": audio_base64,
+#                 "processing_type": "gemini",
+#             }
 
-            component_id = component_collection.insert_one(component_metadata).inserted_id
+#             component_id = component_collection.insert_one(component_metadata).inserted_id
 
-            return {
-                "message": "Audio component created successfully",
-                "component_id": str(component_id),
-                "type": "audio",
-            }
+#             return {
+#                 "message": "Audio component created successfully",
+#                 "component_id": str(component_id),
+#                 "type": "audio",
+#             }
             
-        else:
-            audio_part = {"mime_type": file.content_type, "data": contents}
+#         else:
+#             audio_part = {"mime_type": file.content_type, "data": contents}
             
-            template = f"""You are tasked with generating a JSON mind map for given audio file and that should be compatible with React Flow for rendering a flow diagram which should cover all the details and important aspects of the component for which multiple nodes can be required. The mind map should adhere to the following rules:
+#             template = f"""You are tasked with generating a JSON mind map for given audio file and that should be compatible with React Flow for rendering a flow diagram which should cover all the details and important aspects of the component for which multiple nodes can be required. The mind map should adhere to the following rules:
 
-                1. **Node Types:**
-                - There will always be one `dataSource` node, which serves as the root of the flow.
-                - There will be `question` node which will be connected to the subsequent `response` node.
-                - The `question` node can be connected to data sources or other `response` nodes.
-                - There will be `response` for the above question
+#                 1. **Node Types:**
+#                 - There will always be one `dataSource` node, which serves as the root of the flow.
+#                 - There will be `question` node which will be connected to the subsequent `response` node.
+#                 - The `question` node can be connected to data sources or other `response` nodes.
+#                 - There will be `response` for the above question
                 
-                2. **Node Relationships:**
-                - `response` nodes may also connect to each other if it improves the logical flow or visualization.
-                - `question` node will always have a `response` node
-                - `dataSource` node will always be connected to a question node
+#                 2. **Node Relationships:**
+#                 - `response` nodes may also connect to each other if it improves the logical flow or visualization.
+#                 - `question` node will always have a `response` node
+#                 - `dataSource` node will always be connected to a question node
 
-                3. **Node Properties:**
-                - Each node should have:
-                    - `id` (unique identifier of 12 or 24 digit unique uuid or nanoid)
-                    - `type` (`dataSource` or `response`)
-                    - `position` (coordinates in the form {{ "x": <number>, "y": <number> }} for layout)
-                    - `measured` (an object defining width and height):
-                        {{
-                            "width": <number>,
-                            "height": <number>
-                        }}
-                    - `targetPosition` (position of the target connection, default to `"left"`)
-                    - `sourcePosition` (position of the source connection, default to `"right"`)
-                    - `selected` (boolean, default to `false`)
-                    - `deletable` (boolean, default to `true` for `response` and `false` for `dataSource`)
+#                 3. **Node Properties:**
+#                 - Each node should have:
+#                     - `id` (unique identifier of 12 or 24 digit unique uuid or nanoid)
+#                     - `type` (`dataSource` or `response`)
+#                     - `position` (coordinates in the form {{ "x": <number>, "y": <number> }} for layout)
+#                     - `measured` (an object defining width and height):
+#                         {{
+#                             "width": <number>,
+#                             "height": <number>
+#                         }}
+#                     - `targetPosition` (position of the target connection, default to `"left"`)
+#                     - `sourcePosition` (position of the source connection, default to `"right"`)
+#                     - `selected` (boolean, default to `false`)
+#                     - `deletable` (boolean, default to `true` for `response` and `false` for `dataSource`)
 
-                4. **Node Data Format:**
-                - `dataSource` Node:
-                    - `data` contains the following properties:
-                        {{
-                            "prompt": "<data source description>",
-                            "name": "audio", !!!DOESN"T CHANGES 
-                            "content": "<file name or content>",
-                            "flow_id": "{flow_id}",
-                            "file": "{file.filename}"  // Empty object or file metadata
-                        }}
-                5. **Question Data Format:**
-                - `question` Node:
-                    - `data` contains the following properties:
-                        {{
-                            "question": "<the question asked for the response>",
-                            "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                            "component_type" : "audio",
-                        }}
-                6. **RESPONSE NODE FORMAT**
-                - `response` Node:
-                    - `data` contains nested properties:
-                        {{
-                            "id": "<unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                            "type": "response" !!DOESN'T CHANGE,
-                            "data": {{
-                                "question": "<question text, if applicable>",
-                                "summ": "<!!give me a detailed answer for the above question>",
-                                "df": [],
-                                "graph": "",
-                                "flow_id": "{flow_id}",
-                                "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                                "component_type": "audio"
-                            }}
-                        }}
+#                 4. **Node Data Format:**
+#                 - `dataSource` Node:
+#                     - `data` contains the following properties:
+#                         {{
+#                             "prompt": "<data source description>",
+#                             "name": "audio", !!!DOESN"T CHANGES 
+#                             "content": "<file name or content>",
+#                             "flow_id": "{flow_id}",
+#                             "file": "{file.filename}"  // Empty object or file metadata
+#                         }}
+#                 5. **Question Data Format:**
+#                 - `question` Node:
+#                     - `data` contains the following properties:
+#                         {{
+#                             "question": "<the question asked for the response>",
+#                             "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                             "component_type" : "audio",
+#                         }}
+#                 6. **RESPONSE NODE FORMAT**
+#                 - `response` Node:
+#                     - `data` contains nested properties:
+#                         {{
+#                             "id": "<unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                             "type": "response" !!DOESN'T CHANGE,
+#                             "data": {{
+#                                 "question": "<question text, if applicable>",
+#                                 "summ": "<!!give me a detailed answer for the above question>",
+#                                 "df": [],
+#                                 "graph": "",
+#                                 "flow_id": "{flow_id}",
+#                                 "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                                 "component_type": "audio"
+#                             }}
+#                         }}
 
-                7. **Connections:**
-                - Connections between nodes should be represented by edges, with the following format:
-                    - `id` (unique identifier for the edge)
-                    - `source` (ID of the source node)
-                    - `target` (ID of the target node)
-                    - `type` (optional, defaults to `default`)
-                    - 'animated' !!WILL ALWAYS BE TRUE
+#                 7. **Connections:**
+#                 - Connections between nodes should be represented by edges, with the following format:
+#                     - `id` (unique identifier for the edge)
+#                     - `source` (ID of the source node)
+#                     - `target` (ID of the target node)
+#                     - `type` (optional, defaults to `default`)
+#                     - 'animated' !!WILL ALWAYS BE TRUE
 
-                8. **Viewport Configuration:**
-                - Include a `viewport` object that specifies:
-                    - `x` (horizontal position of the viewport)
-                    - `y` (vertical position of the viewport)
-                    - `zoom` (zoom level for initial rendering)
+#                 8. **Viewport Configuration:**
+#                 - Include a `viewport` object that specifies:
+#                     - `x` (horizontal position of the viewport)
+#                     - `y` (vertical position of the viewport)
+#                     - `zoom` (zoom level for initial rendering)
 
-                ### Additional Considerations:
-                - Ensure that the node positions are distributed properly to avoid overlap.
-                - Prioritize connecting `response` nodes where it adds logical structure to the flow.
+#                 ### Additional Considerations:
+#                 - Ensure that the node positions are distributed properly to avoid overlap.
+#                 - Prioritize connecting `response` nodes where it adds logical structure to the flow.
 
-                ### IMPORTANT:
-                - **RETURN ONLY THE VALID JSON OBJECT AND NO ADDITIONAL COMMENTS**.
-                - Do **not** include any explanations, text, or additional information.
-                - Maintain the format with double curly braces `{{` and `}}` as shown in the format.
-                """
+#                 ### IMPORTANT:
+#                 - **RETURN ONLY THE VALID JSON OBJECT AND NO ADDITIONAL COMMENTS**.
+#                 - Do **not** include any explanations, text, or additional information.
+#                 - Maintain the format with double curly braces `{{` and `}}` as shown in the format.
+#                 """
 
-        response = model.generate_content(contents=[template, audio_part])
+#         response = model.generate_content(contents=[template, audio_part])
 
-        response_json = response.text
-        response_json =  response_json.replace("```json", "").replace("```", "").replace("\n", "").strip()
-        response_json = json.loads(response_json); 
-        print(response_json)
+#         response_json = response.text
+#         response_json =  response_json.replace("```json", "").replace("```", "").replace("\n", "").strip()
+#         response_json = json.loads(response_json); 
+#         print(response_json)
         
-        component_metadata = {
-            "flow_id": ObjectId(flow_id),
-            "name": file.filename,
-            "type": "audio",
-            "processing_type": "gemini",
-            "mindmap_json": response_json,
-        }
+#         component_metadata = {
+#             "flow_id": ObjectId(flow_id),
+#             "name": file.filename,
+#             "type": "audio",
+#             "processing_type": "gemini",
+#             "mindmap_json": response_json,
+#         }
 
-        component_id = component_collection.insert_one(component_metadata).inserted_id
+#         component_id = component_collection.insert_one(component_metadata).inserted_id
 
-        return {
-            "flow_id" : flow_id,
-            "flow_name": flow["flow_name"],
-            "component_id": str(component_id),
-            "type": "audio",
-            "mindmap_json": response_json,
-            "flow_type": "automatic"
-        }
+#         return {
+#             "flow_id" : flow_id,
+#             "flow_name": flow["flow_name"],
+#             "component_id": str(component_id),
+#             "type": "audio",
+#             "mindmap_json": response_json,
+#             "flow_type": "automatic"
+#         }
 
-    except Exception as e:
-        print(f"Error in /component-create-audio endpoint: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+#     except Exception as e:
+#         print(f"Error in /component-create-audio endpoint: {e}")
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/component-create-youtube")
-def create_youtube_component(
-    flow_id: str = Form(...), youtube_url: str = Form(...)
-):
-    try:
-        flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
+# @app.post("/component-create-youtube")
+# def create_youtube_component(
+#     flow_id: str = Form(...), youtube_url: str = Form(...)
+# ):
+#     try:
+#         flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
         
-        print(youtube_url)
+#         print(youtube_url)
         
-        if flow["flow_type"] == 'manual':
-            component_metadata = {
-                "flow_id": ObjectId(flow_id),
-                "youtube_url": youtube_url,
-                "type": "youtube",
-                "processing_type": "gemini",
-            }
+#         if flow["flow_type"] == 'manual':
+#             component_metadata = {
+#                 "flow_id": ObjectId(flow_id),
+#                 "youtube_url": youtube_url,
+#                 "type": "youtube",
+#                 "processing_type": "gemini",
+#             }
 
-            component_id = component_collection.insert_one(component_metadata).inserted_id
+#             component_id = component_collection.insert_one(component_metadata).inserted_id
 
-            return {
-                "message": "Youtube component created successfully",
-                "component_id": str(component_id),
-                "type": "youtube",
-            }
+#             return {
+#                 "message": "Youtube component created successfully",
+#                 "component_id": str(component_id),
+#                 "type": "youtube",
+#             }
             
-        else:
-            mime_type = "video/*"
+#         else:
+#             mime_type = "video/*"
             
-            template = f"""
-                You are tasked with generating a JSON mind map for give youtube URL and should be compatible with React Flow for rendering a flow diagram which should cover all the details and important aspects of the component for which multiple nodes can be required. The mind map should adhere to the following rules:
+#             template = f"""
+#                 You are tasked with generating a JSON mind map for give youtube URL and should be compatible with React Flow for rendering a flow diagram which should cover all the details and important aspects of the component for which multiple nodes can be required. The mind map should adhere to the following rules:
 
-                1. **Node Types:**
-                - There will always be one `dataSource` node, which serves as the root of the flow.
-                - There will be `question` node which will be connected to the subsequent `response` node.
-                - The `question` node can be connected to data sources or other `response` nodes.
-                - There will be `response` for the above question
+#                 1. **Node Types:**
+#                 - There will always be one `dataSource` node, which serves as the root of the flow.
+#                 - There will be `question` node which will be connected to the subsequent `response` node.
+#                 - The `question` node can be connected to data sources or other `response` nodes.
+#                 - There will be `response` for the above question
                 
-                2. **Node Relationships:**
-                - `response` nodes may also connect to each other if it improves the logical flow or visualization.
-                - `question` node will always have a `response` node
-                - `dataSource` node will always be connected to a question node
+#                 2. **Node Relationships:**
+#                 - `response` nodes may also connect to each other if it improves the logical flow or visualization.
+#                 - `question` node will always have a `response` node
+#                 - `dataSource` node will always be connected to a question node
 
-                3. **Node Properties:**
-                - Each node should have:
-                    - `id` (unique identifier of 12 or 24 digit unique uuid or nanoid)
-                    - `type` (`dataSource` or `response`)
-                    - `position` (coordinates in the form {{ "x": <number>, "y": <number> }} for layout)
-                    - `measured` (an object defining width and height):
-                        {{
-                            "width": <number>,
-                            "height": <number>
-                        }}
-                    - `targetPosition` (position of the target connection, default to `"left"`)
-                    - `sourcePosition` (position of the source connection, default to `"right"`)
-                    - `selected` (boolean, default to `false`)
-                    - `deletable` (boolean, default to `true` for `response` and `false` for `dataSource`)
+#                 3. **Node Properties:**
+#                 - Each node should have:
+#                     - `id` (unique identifier of 12 or 24 digit unique uuid or nanoid)
+#                     - `type` (`dataSource` or `response`)
+#                     - `position` (coordinates in the form {{ "x": <number>, "y": <number> }} for layout)
+#                     - `measured` (an object defining width and height):
+#                         {{
+#                             "width": <number>,
+#                             "height": <number>
+#                         }}
+#                     - `targetPosition` (position of the target connection, default to `"left"`)
+#                     - `sourcePosition` (position of the source connection, default to `"right"`)
+#                     - `selected` (boolean, default to `false`)
+#                     - `deletable` (boolean, default to `true` for `response` and `false` for `dataSource`)
 
-                4. **Node Data Format:**
-                - `dataSource` Node:
-                    - `data` contains the following properties:
-                        {{
-                            "prompt": "<data source description>",
-                            "name": "youtube", !!!DOESN"T CHANGES 
-                            "content": "<file name or content>",
-                            "flow_id": "{flow_id}",
-                            "file": "{youtube_url}"  // Empty object or file metadata
-                        }}
-                5. **Question Data Format:**
-                - `question` Node:
-                    - `data` contains the following properties:
-                        {{
-                            "question": "<the question asked for the response>",
-                            "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                            "component_type" : "youtube",
-                        }}
-                6. **RESPONSE NODE FORMAT**
-                - `response` Node:
-                    - `data` contains nested properties:
-                        {{
-                            "id": "<unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                            "type": "response" !!DOESN'T CHANGE,
-                            "data": {{
-                                "question": "<question text, if applicable>",
-                                "summ": "<!!give me a detailed answer for the above question>",
-                                "df": [],
-                                "graph": "",
-                                "flow_id": "{flow_id}",
-                                "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                                "component_type": "youtube"
-                            }}
-                        }}
+#                 4. **Node Data Format:**
+#                 - `dataSource` Node:
+#                     - `data` contains the following properties:
+#                         {{
+#                             "prompt": "<data source description>",
+#                             "name": "youtube", !!!DOESN"T CHANGES 
+#                             "content": "<file name or content>",
+#                             "flow_id": "{flow_id}",
+#                             "file": "{youtube_url}"  // Empty object or file metadata
+#                         }}
+#                 5. **Question Data Format:**
+#                 - `question` Node:
+#                     - `data` contains the following properties:
+#                         {{
+#                             "question": "<the question asked for the response>",
+#                             "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                             "component_type" : "youtube",
+#                         }}
+#                 6. **RESPONSE NODE FORMAT**
+#                 - `response` Node:
+#                     - `data` contains nested properties:
+#                         {{
+#                             "id": "<unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                             "type": "response" !!DOESN'T CHANGE,
+#                             "data": {{
+#                                 "question": "<question text, if applicable>",
+#                                 "summ": "<!!give me a detailed answer for the above question>",
+#                                 "df": [],
+#                                 "graph": "",
+#                                 "flow_id": "{flow_id}",
+#                                 "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                                 "component_type": "youtube"
+#                             }}
+#                         }}
 
-                7. **Connections:**
-                - Connections between nodes should be represented by edges, with the following format:
-                    - `id` (unique identifier for the edge)
-                    - `source` (ID of the source node)
-                    - `target` (ID of the target node)
-                    - `type` (optional, defaults to `default`)
-                    - 'animated' !!WILL ALWAYS BE TRUE
+#                 7. **Connections:**
+#                 - Connections between nodes should be represented by edges, with the following format:
+#                     - `id` (unique identifier for the edge)
+#                     - `source` (ID of the source node)
+#                     - `target` (ID of the target node)
+#                     - `type` (optional, defaults to `default`)
+#                     - 'animated' !!WILL ALWAYS BE TRUE
 
-                8. **Viewport Configuration:**
-                - Include a `viewport` object that specifies:
-                    - `x` (horizontal position of the viewport)
-                    - `y` (vertical position of the viewport)
-                    - `zoom` (zoom level for initial rendering)
+#                 8. **Viewport Configuration:**
+#                 - Include a `viewport` object that specifies:
+#                     - `x` (horizontal position of the viewport)
+#                     - `y` (vertical position of the viewport)
+#                     - `zoom` (zoom level for initial rendering)
 
-                ### Additional Considerations:
-                - Ensure that the node positions are distributed properly to avoid overlap.
-                - Prioritize connecting `response` nodes where it adds logical structure to the flow.
+#                 ### Additional Considerations:
+#                 - Ensure that the node positions are distributed properly to avoid overlap.
+#                 - Prioritize connecting `response` nodes where it adds logical structure to the flow.
 
-                ### IMPORTANT:
-                - **RETURN ONLY THE VALID JSON OBJECT AND NO ADDITIONAL COMMENTS**.
-                - Do **not** include any explanations, text, or additional information.
-                - Maintain the format with double curly braces `{{` and `}}` as shown in the format.
-                """
+#                 ### IMPORTANT:
+#                 - **RETURN ONLY THE VALID JSON OBJECT AND NO ADDITIONAL COMMENTS**.
+#                 - Do **not** include any explanations, text, or additional information.
+#                 - Maintain the format with double curly braces `{{` and `}}` as shown in the format.
+#                 """
 
-        response = model_vertexai.generate_content(
-            contents=[template, Part.from_uri(youtube_url, mime_type)]
-        )
+#         response = model_vertexai.generate_content(
+#             contents=[template, Part.from_uri(youtube_url, mime_type)]
+#         )
 
-        response_json = response.text
-        response_json =  response_json.replace("```json", "").replace("```", "").replace("\n", "").strip()
-        response_json = json.loads(response_json)
+#         response_json = response.text
+#         response_json =  response_json.replace("```json", "").replace("```", "").replace("\n", "").strip()
+#         response_json = json.loads(response_json)
         
-        print(response_json)
+#         print(response_json)
         
-        component_metadata = {
-            "flow_id": ObjectId(flow_id),
-            "youtube_url": youtube_url,
-            "type": "youtube",
-            "processing_type": "gemini",
-            "mindmap_json": response_json,
-        }
+#         component_metadata = {
+#             "flow_id": ObjectId(flow_id),
+#             "youtube_url": youtube_url,
+#             "type": "youtube",
+#             "processing_type": "gemini",
+#             "mindmap_json": response_json,
+#         }
 
-        component_id = component_collection.insert_one(component_metadata).inserted_id
+#         component_id = component_collection.insert_one(component_metadata).inserted_id
 
-        return {
-            "flow_id" : flow_id,
-            "flow_name": flow["flow_name"],
-            "component_id": str(component_id),
-            "type": "youtube",
-            "mindmap_json": response_json,
-            "flow_type": "automatic"
-        }
+#         return {
+#             "flow_id" : flow_id,
+#             "flow_name": flow["flow_name"],
+#             "component_id": str(component_id),
+#             "type": "youtube",
+#             "mindmap_json": response_json,
+#             "flow_type": "automatic"
+#         }
             
 
-    except Exception as e:
-        traceback.print_exc()
-        print(f"Error in /component-create-youtube endpoint: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+#     except Exception as e:
+#         traceback.print_exc()
+#         print(f"Error in /component-create-youtube endpoint: {e}")
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/component-create-video")
-async def create_video_component(
-    flow_id: str = Form(...), file: UploadFile = File(...)
-):
-    try:
-        flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
-        MAX_VIDEO_SIZE_MB = 16
-        ALLOWED_MIME_TYPES = {
-            "video/x-flv",
-            "video/quicktime",
-            "video/mpeg",
-            "video/mpegs",
-            "video/mpgs",
-            "video/mpg",
-            "video/mp4",
-            "video/webm",
-            "video/wmv",
-            "video/3gpp",
-        }
+# @app.post("/component-create-video")
+# async def create_video_component(
+#     flow_id: str = Form(...), file: UploadFile = File(...)
+# ):
+#     try:
+#         flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
+#         MAX_VIDEO_SIZE_MB = 16
+#         ALLOWED_MIME_TYPES = {
+#             "video/x-flv",
+#             "video/quicktime",
+#             "video/mpeg",
+#             "video/mpegs",
+#             "video/mpgs",
+#             "video/mpg",
+#             "video/mp4",
+#             "video/webm",
+#             "video/wmv",
+#             "video/3gpp",
+#         }
 
-        if file.content_type not in ALLOWED_MIME_TYPES:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported video file type: {file.content_type}",
-            )
+#         if file.content_type not in ALLOWED_MIME_TYPES:
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail=f"Unsupported video file type: {file.content_type}",
+#             )
 
-        contents = await file.read()
-        size_in_mb = len(contents) / (1024 * 1024)
+#         contents = await file.read()
+#         size_in_mb = len(contents) / (1024 * 1024)
 
-        if size_in_mb > MAX_VIDEO_SIZE_MB:
-            raise HTTPException(status_code=400, detail="Video exceeds 16MB size limit")
+#         if size_in_mb > MAX_VIDEO_SIZE_MB:
+#             raise HTTPException(status_code=400, detail="Video exceeds 16MB size limit")
 
-        unique_id = str(uuid4())
-        s3_key = f"uploads/{flow_id}/videos/{unique_id}_{file.filename}"
+#         unique_id = str(uuid4())
+#         s3_key = f"uploads/{flow_id}/videos/{unique_id}_{file.filename}"
 
-        upload_to_s3(contents, bucket_name, s3_key)
+#         upload_to_s3(contents, bucket_name, s3_key)
 
-        video_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+#         video_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
         
-        if flow["flow_type"] == 'manual':
+#         if flow["flow_type"] == 'manual':
 
-            component_metadata = {
-                "flow_id": ObjectId(flow_id),
-                "name": file.filename,
-                "mime_type": file.content_type,
-                "type": "video",
-                "video_url": video_url,
-                "processing_type": "gemini",
-            }
+#             component_metadata = {
+#                 "flow_id": ObjectId(flow_id),
+#                 "name": file.filename,
+#                 "mime_type": file.content_type,
+#                 "type": "video",
+#                 "video_url": video_url,
+#                 "processing_type": "gemini",
+#             }
 
-            component_id = component_collection.insert_one(component_metadata).inserted_id
+#             component_id = component_collection.insert_one(component_metadata).inserted_id
 
-            return {
-                "message": "Video component created successfully",
-                "component_id": str(component_id),
-                "type": "video",
-            }
+#             return {
+#                 "message": "Video component created successfully",
+#                 "component_id": str(component_id),
+#                 "type": "video",
+#             }
             
-        else:
+#         else:
             
-            mime_type = "video/*"
+#             mime_type = "video/*"
             
-            template = f"""
-                You are tasked with generating a JSON mind map for give video and should be compatible with React Flow for rendering a flow diagram which should cover all the details and important aspects of the component for which multiple nodes can be required. The mind map should adhere to the following rules:
+#             template = f"""
+#                 You are tasked with generating a JSON mind map for give video and should be compatible with React Flow for rendering a flow diagram which should cover all the details and important aspects of the component for which multiple nodes can be required. The mind map should adhere to the following rules:
 
-                1. **Node Types:**
-                - There will always be one `dataSource` node, which serves as the root of the flow.
-                - There will be `question` node which will be connected to the subsequent `response` node.
-                - The `question` node can be connected to data sources or other `response` nodes.
-                - There will be `response` for the above question
+#                 1. **Node Types:**
+#                 - There will always be one `dataSource` node, which serves as the root of the flow.
+#                 - There will be `question` node which will be connected to the subsequent `response` node.
+#                 - The `question` node can be connected to data sources or other `response` nodes.
+#                 - There will be `response` for the above question
                 
-                2. **Node Relationships:**
-                - `response` nodes may also connect to each other if it improves the logical flow or visualization.
-                - `question` node will always have a `response` node
-                - `dataSource` node will always be connected to a question node
+#                 2. **Node Relationships:**
+#                 - `response` nodes may also connect to each other if it improves the logical flow or visualization.
+#                 - `question` node will always have a `response` node
+#                 - `dataSource` node will always be connected to a question node
 
-                3. **Node Properties:**
-                - Each node should have:
-                    - `id` (unique identifier of 12 or 24 digit unique uuid or nanoid)
-                    - `type` (`dataSource` or `response`)
-                    - `position` (coordinates in the form {{ "x": <number>, "y": <number> }} for layout)
-                    - `measured` (an object defining width and height):
-                        {{
-                            "width": <number>,
-                            "height": <number>
-                        }}
-                    - `targetPosition` (position of the target connection, default to `"left"`)
-                    - `sourcePosition` (position of the source connection, default to `"right"`)
-                    - `selected` (boolean, default to `false`)
-                    - `deletable` (boolean, default to `true` for `response` and `false` for `dataSource`)
+#                 3. **Node Properties:**
+#                 - Each node should have:
+#                     - `id` (unique identifier of 12 or 24 digit unique uuid or nanoid)
+#                     - `type` (`dataSource` or `response`)
+#                     - `position` (coordinates in the form {{ "x": <number>, "y": <number> }} for layout)
+#                     - `measured` (an object defining width and height):
+#                         {{
+#                             "width": <number>,
+#                             "height": <number>
+#                         }}
+#                     - `targetPosition` (position of the target connection, default to `"left"`)
+#                     - `sourcePosition` (position of the source connection, default to `"right"`)
+#                     - `selected` (boolean, default to `false`)
+#                     - `deletable` (boolean, default to `true` for `response` and `false` for `dataSource`)
 
-                4. **Node Data Format:**
-                - `dataSource` Node:
-                    - `data` contains the following properties:
-                        {{
-                            "prompt": "<data source description>",
-                            "name": "{file.filename}", !!!DOESN"T CHANGES 
-                            "content": "<file name or content>",
-                            "flow_id": "{flow_id}",
-                            "file": "{file.filename}"  // Empty object or file metadata
-                        }}
-                5. **Question Data Format:**
-                - `question` Node:
-                    - `data` contains the following properties:
-                        {{
-                            "question": "<the question asked for the response>",
-                            "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                            "component_type" : "video",
-                        }}
-                6. **RESPONSE NODE FORMAT**
-                - `response` Node:
-                    - `data` contains nested properties:
-                        {{
-                            "id": "<unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                            "type": "response" !!DOESN'T CHANGE,
-                            "data": {{
-                                "question": "<question text, if applicable>",
-                                "summ": "<!!give me a detailed answer for the above question>",
-                                "df": [],
-                                "graph": "",
-                                "flow_id": "{flow_id}",
-                                "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
-                                "component_type": "video"
-                            }}
-                        }}
+#                 4. **Node Data Format:**
+#                 - `dataSource` Node:
+#                     - `data` contains the following properties:
+#                         {{
+#                             "prompt": "<data source description>",
+#                             "name": "{file.filename}", !!!DOESN"T CHANGES 
+#                             "content": "<file name or content>",
+#                             "flow_id": "{flow_id}",
+#                             "file": "{file.filename}"  // Empty object or file metadata
+#                         }}
+#                 5. **Question Data Format:**
+#                 - `question` Node:
+#                     - `data` contains the following properties:
+#                         {{
+#                             "question": "<the question asked for the response>",
+#                             "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                             "component_type" : "video",
+#                         }}
+#                 6. **RESPONSE NODE FORMAT**
+#                 - `response` Node:
+#                     - `data` contains nested properties:
+#                         {{
+#                             "id": "<unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                             "type": "response" !!DOESN'T CHANGE,
+#                             "data": {{
+#                                 "question": "<question text, if applicable>",
+#                                 "summ": "<!!give me a detailed answer for the above question>",
+#                                 "df": [],
+#                                 "graph": "",
+#                                 "flow_id": "{flow_id}",
+#                                 "component_id": "<component reference ID - unique identifier of 12 or 24 digit unique uuid or nanoid>",
+#                                 "component_type": "video"
+#                             }}
+#                         }}
 
-                7. **Connections:**
-                - Connections between nodes should be represented by edges, with the following format:
-                    - `id` (unique identifier for the edge)
-                    - `source` (ID of the source node)
-                    - `target` (ID of the target node)
-                    - `type` (optional, defaults to `default`)
-                    - 'animated' !!WILL ALWAYS BE TRUE
+#                 7. **Connections:**
+#                 - Connections between nodes should be represented by edges, with the following format:
+#                     - `id` (unique identifier for the edge)
+#                     - `source` (ID of the source node)
+#                     - `target` (ID of the target node)
+#                     - `type` (optional, defaults to `default`)
+#                     - 'animated' !!WILL ALWAYS BE TRUE
 
-                8. **Viewport Configuration:**
-                - Include a `viewport` object that specifies:
-                    - `x` (horizontal position of the viewport)
-                    - `y` (vertical position of the viewport)
-                    - `zoom` (zoom level for initial rendering)
+#                 8. **Viewport Configuration:**
+#                 - Include a `viewport` object that specifies:
+#                     - `x` (horizontal position of the viewport)
+#                     - `y` (vertical position of the viewport)
+#                     - `zoom` (zoom level for initial rendering)
 
-                ### Additional Considerations:
-                - Ensure that the node positions are distributed properly to avoid overlap.
-                - Prioritize connecting `response` nodes where it adds logical structure to the flow.
+#                 ### Additional Considerations:
+#                 - Ensure that the node positions are distributed properly to avoid overlap.
+#                 - Prioritize connecting `response` nodes where it adds logical structure to the flow.
 
-                ### IMPORTANT:
-                - **RETURN ONLY THE VALID JSON OBJECT AND NO ADDITIONAL COMMENTS**.
-                - Do **not** include any explanations, text, or additional information.
-                - Maintain the format with double curly braces `{{` and `}}` as shown in the format.
-                """
+#                 ### IMPORTANT:
+#                 - **RETURN ONLY THE VALID JSON OBJECT AND NO ADDITIONAL COMMENTS**.
+#                 - Do **not** include any explanations, text, or additional information.
+#                 - Maintain the format with double curly braces `{{` and `}}` as shown in the format.
+#                 """
 
-        response = model_vertexai.generate_content(
-            contents=[template, Part.from_uri(video_url, mime_type)]
-        )
+#         response = model_vertexai.generate_content(
+#             contents=[template, Part.from_uri(video_url, mime_type)]
+#         )
 
-        response_json = response.text
-        response_json =  response_json.replace("```json", "").replace("```", "").replace("\n", "").strip()
+#         response_json = response.text
+#         response_json =  response_json.replace("```json", "").replace("```", "").replace("\n", "").strip()
         
-        response_json = json.loads(response_json)
+#         response_json = json.loads(response_json)
         
-        print(response_json)
+#         print(response_json)
                 
-        component_metadata = {
-            "flow_id": ObjectId(flow_id),
-            "video_url": video_url,
-            "type": "video",
-            "processing_type": "gemini",
-            "mindmap_json": response_json,
-        }
+#         component_metadata = {
+#             "flow_id": ObjectId(flow_id),
+#             "video_url": video_url,
+#             "type": "video",
+#             "processing_type": "gemini",
+#             "mindmap_json": response_json,
+#         }
 
-        component_id = component_collection.insert_one(component_metadata).inserted_id
+#         component_id = component_collection.insert_one(component_metadata).inserted_id
 
-        return {
-            "flow_id" : flow_id,
-            "flow_name": flow["flow_name"],
-            "component_id": str(component_id),
-            "type": "video",
-            "mindmap_json": response_json,
-            "flow_type": "automatic"
-        }
+#         return {
+#             "flow_id" : flow_id,
+#             "flow_name": flow["flow_name"],
+#             "component_id": str(component_id),
+#             "type": "video",
+#             "mindmap_json": response_json,
+#             "flow_type": "automatic"
+#         }
             
-    except Exception as e:
-        print(f"Error in /component-create-video endpoint: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+#     except Exception as e:
+#         print(f"Error in /component-create-video endpoint: {e}")
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.post("/component-create-txt")
@@ -2262,21 +2262,21 @@ def create_md_component(file: UploadFile, flow_id: str = Form(...)):
         raise HTTPException(status_code=400, detail="Only MarkDown files are allowed.")
 
 
-@app.post("/component-create-pptx")
-def create_pptx_component(file: UploadFile, flow_id: str = Form(...)):
-    flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
-    if file.filename.endswith(".pptx"):
-        check_page_length = is_within_gpt4o_token_limit(file)
-        if check_page_length and flow["flow_type"] == 'manual':
-            return get_summary_from_openai(file, flow_id=flow_id, flow_type=flow["flow_type"])
-        elif check_page_length and flow["flow_type"] == 'automatic':
-            return openai_mindmap_generator(file, flow_id=flow_id, flow_type=flow["flow_type"])
-        else:
-            traceback.print_exc()
-            return HTTPException(status_code=404, detail="Exceeded Page limit for GPT.")
-    else:
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail="Only PPTX files are allowed.")
+# @app.post("/component-create-pptx")
+# def create_pptx_component(file: UploadFile, flow_id: str = Form(...)):
+#     flow = flow_collection.find_one({"_id": ObjectId(flow_id)})
+#     if file.filename.endswith(".pptx"):
+#         check_page_length = is_within_gpt4o_token_limit(file)
+#         if check_page_length and flow["flow_type"] == 'manual':
+#             return get_summary_from_openai(file, flow_id=flow_id, flow_type=flow["flow_type"])
+#         elif check_page_length and flow["flow_type"] == 'automatic':
+#             return openai_mindmap_generator(file, flow_id=flow_id, flow_type=flow["flow_type"])
+#         else:
+#             traceback.print_exc()
+#             return HTTPException(status_code=404, detail="Exceeded Page limit for GPT.")
+#     else:
+#         traceback.print_exc()
+#         raise HTTPException(status_code=400, detail="Only PPTX files are allowed.")
 
 
 @app.post("/component-create-html")
@@ -3564,403 +3564,403 @@ def IMG_QA(request: ImgNodeQueryRequest):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/audio-component-qa", response_model=List[AudioNodeQueryResponse])
-def AUDIO_QA(request: AudioNodeQueryRequest):
-    try:
-        record = component_collection.find_one(
-            {
-                "flow_id": ObjectId(request.flow_id),
-                "_id": ObjectId(request.component_id),
-                "type": "audio",
-            }
-        )
+# @app.post("/audio-component-qa", response_model=List[AudioNodeQueryResponse])
+# def AUDIO_QA(request: AudioNodeQueryRequest):
+#     try:
+#         record = component_collection.find_one(
+#             {
+#                 "flow_id": ObjectId(request.flow_id),
+#                 "_id": ObjectId(request.component_id),
+#                 "type": "audio",
+#             }
+#         )
         
-        instructions = record["instructions"]
-        persona_name = record["persona_name"]
+#         instructions = record["instructions"]
+#         persona_name = record["persona_name"]
 
-        base64_audio = record["base64_audio"]
-        mime_type = record["mime_type"]
-        audio_bytes = base64.b64decode(base64_audio)
+#         base64_audio = record["base64_audio"]
+#         mime_type = record["mime_type"]
+#         audio_bytes = base64.b64decode(base64_audio)
 
-        audio_part = {"mime_type": mime_type, "data": audio_bytes}
+#         audio_part = {"mime_type": mime_type, "data": audio_bytes}
 
-        template = f"""You are an AI assistant tasked with answering the user’s question based on the provided question and persona. Return the results in **JSON format** with the structure below:  
+#         template = f"""You are an AI assistant tasked with answering the user’s question based on the provided question and persona. Return the results in **JSON format** with the structure below:  
 
-    #### **Response Format:**  
-    {{
-    "summ": "Your summarized response here...",
-    "df": an array of JSON objects,
-    "graph": "json_string_representation_of_plotly_graph"
-    }}
+#     #### **Response Format:**  
+#     {{
+#     "summ": "Your summarized response here...",
+#     "df": an array of JSON objects,
+#     "graph": "json_string_representation_of_plotly_graph"
+#     }}
 
-    ### **Instructions:**
-    1. Answer the question using the conversation history.
-    2. Extract relevant tabular data into a JSON object compatible with Ag-Grid. If no table exists, return empty JSON object.
-    3. If a dataframe is available, generate a relevant **Plotly graph**. Return it as a **valid JSON string** that can be parsed in React.js.
-    4. If no graph is possible, return an empty string `""`.
-    5. ** The graph's background will be black, so adjust the theme accordingly**.
+#     ### **Instructions:**
+#     1. Answer the question using the conversation history.
+#     2. Extract relevant tabular data into a JSON object compatible with Ag-Grid. If no table exists, return empty JSON object.
+#     3. If a dataframe is available, generate a relevant **Plotly graph**. Return it as a **valid JSON string** that can be parsed in React.js.
+#     4. If no graph is possible, return an empty string `""`.
+#     5. ** The graph's background will be black, so adjust the theme accordingly**.
 
-    NOTE -- "Make sure you need to return only json as response only & please don't add any comments"
-    NOTE -- "Make sure you need only need the answer for which context of data is available if not available return empty json as per format"
+#     NOTE -- "Make sure you need to return only json as response only & please don't add any comments"
+#     NOTE -- "Make sure you need only need the answer for which context of data is available if not available return empty json as per format"
 
-    **Here is the question:** {request.query}  
-    **Here is the persona:** {persona_name}
+#     **Here is the question:** {request.query}  
+#     **Here is the persona:** {persona_name}
 
-    ### **Example Output:**  
-    If the conversation history contains a table and a relevant graph, return:  
+#     ### **Example Output:**  
+#     If the conversation history contains a table and a relevant graph, return:  
 
-    ```json
-    {{
-    "summ": "Based on the conversation, the key points discussed were...",
-    "df": [
-        {{
-        "column1": "value1",
-        "column2": "value2",
-        "column3": "value3"
-        }},
-        {{
-        "column1": "value1",
-        "column2": "value2",
-        "column3": "value3"
-        }}
-    ],
-    "graph": "{{\"data\": [{{\"x\": [\"2024-02-01\", \"2024-02-02\"], \"y\": [100, 150], \"type\": \"line\"}}], \"layout\": {{\"title\": \"Sample Graph\"}}"
-    }}
-    """
+#     ```json
+#     {{
+#     "summ": "Based on the conversation, the key points discussed were...",
+#     "df": [
+#         {{
+#         "column1": "value1",
+#         "column2": "value2",
+#         "column3": "value3"
+#         }},
+#         {{
+#         "column1": "value1",
+#         "column2": "value2",
+#         "column3": "value3"
+#         }}
+#     ],
+#     "graph": "{{\"data\": [{{\"x\": [\"2024-02-01\", \"2024-02-02\"], \"y\": [100, 150], \"type\": \"line\"}}], \"layout\": {{\"title\": \"Sample Graph\"}}"
+#     }}
+#     """
 
-        response = model.generate_content(contents=[template, audio_part])
+#         response = model.generate_content(contents=[template, audio_part])
 
-        responseList = response.text
-        responseList = (
-            responseList.replace("```json", "")
-            .replace("```", "")
-            .replace("\n", "")
-            .strip()
-        )
+#         responseList = response.text
+#         responseList = (
+#             responseList.replace("```json", "")
+#             .replace("```", "")
+#             .replace("\n", "")
+#             .strip()
+#         )
 
-        response_json = json.loads(responseList)
-        print(response_json)
+#         response_json = json.loads(responseList)
+#         print(response_json)
 
-        node_data = {
-            "_id": ObjectId(request.node_id),
-            "flow_id": ObjectId(request.flow_id),
-            "component_id": ObjectId(request.component_id),
-            "question": request.query,
-            "summ": response_json.get("summ", ""),
-            "df": validate_dataframe(response_json.get("df", [])),
-            "graph": response_json.get("graph", {}),
-            "type": "audio",
-            "is_delete": "false",
-            "timestamp": datetime.datetime.utcnow(),
-        }
+#         node_data = {
+#             "_id": ObjectId(request.node_id),
+#             "flow_id": ObjectId(request.flow_id),
+#             "component_id": ObjectId(request.component_id),
+#             "question": request.query,
+#             "summ": response_json.get("summ", ""),
+#             "df": validate_dataframe(response_json.get("df", [])),
+#             "graph": response_json.get("graph", {}),
+#             "type": "audio",
+#             "is_delete": "false",
+#             "timestamp": datetime.datetime.utcnow(),
+#         }
 
-        node_id_response = node_collection.insert_one(node_data)
+#         node_id_response = node_collection.insert_one(node_data)
 
-        question_entries = []
+#         question_entries = []
 
-        question_entries.append(
-            AudioNodeQueryResponse(
-                data={
-                    "question": request.query,
-                    "summ": response_json.get("summ", ""),
-                    "df": validate_dataframe(response_json.get("df", [])),
-                    "graph": response_json.get("graph", {}),
-                    "flow_id": request.flow_id,
-                    "component_id": request.component_id,
-                    "component_type": "audio",
-                },
-                id=request.node_id,
-                type="AudioNode",
-            )
-        )
+#         question_entries.append(
+#             AudioNodeQueryResponse(
+#                 data={
+#                     "question": request.query,
+#                     "summ": response_json.get("summ", ""),
+#                     "df": validate_dataframe(response_json.get("df", [])),
+#                     "graph": response_json.get("graph", {}),
+#                     "flow_id": request.flow_id,
+#                     "component_id": request.component_id,
+#                     "component_type": "audio",
+#                 },
+#                 id=request.node_id,
+#                 type="AudioNode",
+#             )
+#         )
 
-        if request.request_type == "question":
-            empty_question_entry = AudioNodeQueryResponse(
-                id=str(ObjectId()),
-                data={
-                    "question": "",
-                    "flow_id": request.flow_id,
-                    "component_id": request.component_id,
-                    "component_type": "audio",
-                },
-                type="question",
-            )
+#         if request.request_type == "question":
+#             empty_question_entry = AudioNodeQueryResponse(
+#                 id=str(ObjectId()),
+#                 data={
+#                     "question": "",
+#                     "flow_id": request.flow_id,
+#                     "component_id": request.component_id,
+#                     "component_type": "audio",
+#                 },
+#                 type="question",
+#             )
 
-            question_entries.append(empty_question_entry)
+#             question_entries.append(empty_question_entry)
 
-        return question_entries
+#         return question_entries
 
-    except Exception as e:
-        print(f"Error in /audio-component-qa endpoint: {e}")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+#     except Exception as e:
+#         print(f"Error in /audio-component-qa endpoint: {e}")
+#         traceback.print_exc()
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/youtube-component-qa", response_model=List[YoutubeNodeQueryResponse])
-def YOUTUBE_QA(request: YoutubeNodeQueryRequest):
-    try:
-        record = component_collection.find_one(
-            {
-                "flow_id": ObjectId(request.flow_id),
-                "_id": ObjectId(request.component_id),
-                "type": "youtube",
-            }
-        )
+# @app.post("/youtube-component-qa", response_model=List[YoutubeNodeQueryResponse])
+# def YOUTUBE_QA(request: YoutubeNodeQueryRequest):
+#     try:
+#         record = component_collection.find_one(
+#             {
+#                 "flow_id": ObjectId(request.flow_id),
+#                 "_id": ObjectId(request.component_id),
+#                 "type": "youtube",
+#             }
+#         )
 
-        instructions = record["instructions"]
-        persona_name = record["persona_name"]
+#         instructions = record["instructions"]
+#         persona_name = record["persona_name"]
         
-        youtube_url = record["youtube_url"]
-        mime_type = "video/*"
+#         youtube_url = record["youtube_url"]
+#         mime_type = "video/*"
 
-        template = f"""
-      You are an AI assistant tasked with answering the user’s question based on the provided question and persona. Return the results in **JSON format** with the structure below:  
+#         template = f"""
+#       You are an AI assistant tasked with answering the user’s question based on the provided question and persona. Return the results in **JSON format** with the structure below:  
 
-    #### **Response Format:**  
-    {{
-    "summ": "Your summarized response here...",
-    "df": an array of JSON objects,
-    "graph": "json_string_representation_of_plotly_graph"
-    }}
+#     #### **Response Format:**  
+#     {{
+#     "summ": "Your summarized response here...",
+#     "df": an array of JSON objects,
+#     "graph": "json_string_representation_of_plotly_graph"
+#     }}
 
-    ### **Instructions:**
-    1. Answer the question using the conversation history.
-    2. Extract relevant tabular data into a JSON object compatible with Ag-Grid. If no table exists, return empty JSON object.
-    3. If a dataframe is available, generate a relevant **Plotly graph**. Return it as a **valid JSON string** that can be parsed in React.js.
-    4. If no graph is possible, return an empty string `""`.
-    5. ** The graph's background will be black, so adjust the theme accordingly**.
+#     ### **Instructions:**
+#     1. Answer the question using the conversation history.
+#     2. Extract relevant tabular data into a JSON object compatible with Ag-Grid. If no table exists, return empty JSON object.
+#     3. If a dataframe is available, generate a relevant **Plotly graph**. Return it as a **valid JSON string** that can be parsed in React.js.
+#     4. If no graph is possible, return an empty string `""`.
+#     5. ** The graph's background will be black, so adjust the theme accordingly**.
 
-    NOTE -- "Make sure you need to return only json as response only & please don't add any comments"
-    NOTE -- "Make sure you need only need the answer for which context of data is available if not available return empty json as per format"
+#     NOTE -- "Make sure you need to return only json as response only & please don't add any comments"
+#     NOTE -- "Make sure you need only need the answer for which context of data is available if not available return empty json as per format"
 
-    **Here is the question:** {request.query}  
-    **Here is the persona:** {persona_name}
+#     **Here is the question:** {request.query}  
+#     **Here is the persona:** {persona_name}
 
-    ### **Example Output:**  
-    If the conversation history contains a table and a relevant graph, return:  
+#     ### **Example Output:**  
+#     If the conversation history contains a table and a relevant graph, return:  
 
-    ```json
-    {{
-    "summ": "Based on the conversation, the key points discussed were...",
-    "df": [
-        {{
-        "column1": "value1",
-        "column2": "value2",
-        "column3": "value3"
-        }},
-        {{
-        "column1": "value1",
-        "column2": "value2",
-        "column3": "value3"
-        }}
-    ],
-    "graph": "{{\"data\": [{{\"x\": [\"2024-02-01\", \"2024-02-02\"], \"y\": [100, 150], \"type\": \"line\"}}], \"layout\": {{\"title\": \"Sample Graph\"}}"
-    }}
-    """
+#     ```json
+#     {{
+#     "summ": "Based on the conversation, the key points discussed were...",
+#     "df": [
+#         {{
+#         "column1": "value1",
+#         "column2": "value2",
+#         "column3": "value3"
+#         }},
+#         {{
+#         "column1": "value1",
+#         "column2": "value2",
+#         "column3": "value3"
+#         }}
+#     ],
+#     "graph": "{{\"data\": [{{\"x\": [\"2024-02-01\", \"2024-02-02\"], \"y\": [100, 150], \"type\": \"line\"}}], \"layout\": {{\"title\": \"Sample Graph\"}}"
+#     }}
+#     """
 
-        response = model_vertexai.generate_content(
-            contents=[template, Part.from_uri(youtube_url, mime_type)]
-        )
+#         response = model_vertexai.generate_content(
+#             contents=[template, Part.from_uri(youtube_url, mime_type)]
+#         )
 
-        responseList = response.text
-        responseList = (
-            responseList.replace("```json", "")
-            .replace("```", "")
-            .replace("\n", "")
-            .strip()
-        )
+#         responseList = response.text
+#         responseList = (
+#             responseList.replace("```json", "")
+#             .replace("```", "")
+#             .replace("\n", "")
+#             .strip()
+#         )
 
-        response_json = json.loads(responseList)
-        print(response_json)
+#         response_json = json.loads(responseList)
+#         print(response_json)
 
-        node_data = {
-            "_id": ObjectId(request.node_id),
-            "flow_id": ObjectId(request.flow_id),
-            "component_id": ObjectId(request.component_id),
-            "question": request.query,
-            "summ": response_json.get("summ", ""),
-            "df": validate_dataframe(response_json.get("df", [])),
-            "graph": response_json.get("graph", {}),
-            "type": "youtube",
-            "is_delete": "false",
-            "timestamp": datetime.datetime.utcnow(),
-        }
+#         node_data = {
+#             "_id": ObjectId(request.node_id),
+#             "flow_id": ObjectId(request.flow_id),
+#             "component_id": ObjectId(request.component_id),
+#             "question": request.query,
+#             "summ": response_json.get("summ", ""),
+#             "df": validate_dataframe(response_json.get("df", [])),
+#             "graph": response_json.get("graph", {}),
+#             "type": "youtube",
+#             "is_delete": "false",
+#             "timestamp": datetime.datetime.utcnow(),
+#         }
 
-        node_id_response = node_collection.insert_one(node_data)
+#         node_id_response = node_collection.insert_one(node_data)
 
-        question_entries = []
+#         question_entries = []
 
-        question_entries.append(
-            YoutubeNodeQueryResponse(
-                data={
-                    "question": request.query,
-                    "summ": response_json.get("summ", ""),
-                    "df": validate_dataframe(response_json.get("df", [])),
-                    "graph": response_json.get("graph", {}),
-                    "flow_id": request.flow_id,
-                    "component_id": request.component_id,
-                    "component_type": "youtube",
-                },
-                id=request.node_id,
-                type="YoutubeNode",
-            )
-        )
+#         question_entries.append(
+#             YoutubeNodeQueryResponse(
+#                 data={
+#                     "question": request.query,
+#                     "summ": response_json.get("summ", ""),
+#                     "df": validate_dataframe(response_json.get("df", [])),
+#                     "graph": response_json.get("graph", {}),
+#                     "flow_id": request.flow_id,
+#                     "component_id": request.component_id,
+#                     "component_type": "youtube",
+#                 },
+#                 id=request.node_id,
+#                 type="YoutubeNode",
+#             )
+#         )
 
-        if request.request_type == "question":
-            empty_question_entry = YoutubeNodeQueryResponse(
-                id=str(ObjectId()),
-                data={
-                    "question": "",
-                    "flow_id": request.flow_id,
-                    "component_id": request.component_id,
-                    "component_type": "youtube",
-                },
-                type="question",
-            )
+#         if request.request_type == "question":
+#             empty_question_entry = YoutubeNodeQueryResponse(
+#                 id=str(ObjectId()),
+#                 data={
+#                     "question": "",
+#                     "flow_id": request.flow_id,
+#                     "component_id": request.component_id,
+#                     "component_type": "youtube",
+#                 },
+#                 type="question",
+#             )
 
-            question_entries.append(empty_question_entry)
+#             question_entries.append(empty_question_entry)
 
-        return question_entries
+#         return question_entries
 
-    except Exception as e:
-        print(f"Error in /youtube-component-qa endpoint: {e}")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+#     except Exception as e:
+#         print(f"Error in /youtube-component-qa endpoint: {e}")
+#         traceback.print_exc()
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/video-component-qa", response_model=List[VideoNodeQueryResponse])
-def VIDEO_QA(request: VideoNodeQueryRequest):
-    try:
-        record = component_collection.find_one(
-            {
-                "flow_id": ObjectId(request.flow_id),
-                "_id": ObjectId(request.component_id),
-                "type": "video",
-            }
-        )
+# @app.post("/video-component-qa", response_model=List[VideoNodeQueryResponse])
+# def VIDEO_QA(request: VideoNodeQueryRequest):
+#     try:
+#         record = component_collection.find_one(
+#             {
+#                 "flow_id": ObjectId(request.flow_id),
+#                 "_id": ObjectId(request.component_id),
+#                 "type": "video",
+#             }
+#         )
 
-        instructions = record["instructions"]
-        persona_name = record["persona_name"]
+#         instructions = record["instructions"]
+#         persona_name = record["persona_name"]
         
-        video_url = record["video_url"]
-        mime_type = record["mime_type"]
+#         video_url = record["video_url"]
+#         mime_type = record["mime_type"]
 
-        template = f"""
-          You are an AI assistant tasked with answering the user’s question based on the provided question and persona. Return the results in **JSON format** with the structure below:  
+#         template = f"""
+#           You are an AI assistant tasked with answering the user’s question based on the provided question and persona. Return the results in **JSON format** with the structure below:  
 
-    #### **Response Format:**  
-    {{
-    "summ": "Your summarized response here...",
-    "df": an array of JSON objects,
-    "graph": "json_string_representation_of_plotly_graph"
-    }}
+#     #### **Response Format:**  
+#     {{
+#     "summ": "Your summarized response here...",
+#     "df": an array of JSON objects,
+#     "graph": "json_string_representation_of_plotly_graph"
+#     }}
 
-    ### **Instructions:**
-    1. Answer the question using the conversation history.
-    2. Extract relevant tabular data into a JSON object compatible with Ag-Grid. If no table exists, return empty JSON object.
-    3. If a dataframe is available, generate a relevant **Plotly graph**. Return it as a **valid JSON string** that can be parsed in React.js.
-    4. If no graph is possible, return an empty string `""`.
-    5. ** The graph's background will be black, so adjust the theme accordingly**.
+#     ### **Instructions:**
+#     1. Answer the question using the conversation history.
+#     2. Extract relevant tabular data into a JSON object compatible with Ag-Grid. If no table exists, return empty JSON object.
+#     3. If a dataframe is available, generate a relevant **Plotly graph**. Return it as a **valid JSON string** that can be parsed in React.js.
+#     4. If no graph is possible, return an empty string `""`.
+#     5. ** The graph's background will be black, so adjust the theme accordingly**.
 
-    NOTE -- "Make sure you need to return only json as response only & please don't add any comments"
-    NOTE -- "Make sure you need only need the answer for which context of data is available if not available return empty json as per format"
+#     NOTE -- "Make sure you need to return only json as response only & please don't add any comments"
+#     NOTE -- "Make sure you need only need the answer for which context of data is available if not available return empty json as per format"
 
-    **Here is the question:** {request.query}  
-    **Here is the persona:** {persona_name}
+#     **Here is the question:** {request.query}  
+#     **Here is the persona:** {persona_name}
 
-    ### **Example Output:**  
-    If the conversation history contains a table and a relevant graph, return:  
+#     ### **Example Output:**  
+#     If the conversation history contains a table and a relevant graph, return:  
 
-    ```json
-    {{
-    "summ": "Based on the conversation, the key points discussed were...",
-    "df": [
-        {{
-        "column1": "value1",
-        "column2": "value2",
-        "column3": "value3"
-        }},
-        {{
-        "column1": "value1",
-        "column2": "value2",
-        "column3": "value3"
-        }}
-    ],
-    "graph": "{{\"data\": [{{\"x\": [\"2024-02-01\", \"2024-02-02\"], \"y\": [100, 150], \"type\": \"line\"}}], \"layout\": {{\"title\": \"Sample Graph\"}}"
-    }}
-    """
+#     ```json
+#     {{
+#     "summ": "Based on the conversation, the key points discussed were...",
+#     "df": [
+#         {{
+#         "column1": "value1",
+#         "column2": "value2",
+#         "column3": "value3"
+#         }},
+#         {{
+#         "column1": "value1",
+#         "column2": "value2",
+#         "column3": "value3"
+#         }}
+#     ],
+#     "graph": "{{\"data\": [{{\"x\": [\"2024-02-01\", \"2024-02-02\"], \"y\": [100, 150], \"type\": \"line\"}}], \"layout\": {{\"title\": \"Sample Graph\"}}"
+#     }}
+#     """
 
-        response = model_vertexai.generate_content(
-            contents=[template, Part.from_uri(video_url, mime_type)]
-        )
+#         response = model_vertexai.generate_content(
+#             contents=[template, Part.from_uri(video_url, mime_type)]
+#         )
 
-        print(response)
-        print(response.text)
+#         print(response)
+#         print(response.text)
 
-        responseList = response.text
-        responseList = (
-            responseList.replace("```json", "")
-            .replace("```", "")
-            .replace("\n", "")
-            .strip()
-        )
+#         responseList = response.text
+#         responseList = (
+#             responseList.replace("```json", "")
+#             .replace("```", "")
+#             .replace("\n", "")
+#             .strip()
+#         )
 
-        response_json = json.loads(responseList)
-        print(response_json)
+#         response_json = json.loads(responseList)
+#         print(response_json)
 
-        node_data = {
-            "_id": ObjectId(request.node_id),
-            "flow_id": ObjectId(request.flow_id),
-            "component_id": ObjectId(request.component_id),
-            "question": request.query,
-            "summ": response_json.get("summ", ""),
-            "df": validate_dataframe(response_json.get("df", [])),
-            "graph": response_json.get("graph", {}),
-            "type": "video",
-            "is_delete": "false",
-            "timestamp": datetime.datetime.utcnow(),
-        }
+#         node_data = {
+#             "_id": ObjectId(request.node_id),
+#             "flow_id": ObjectId(request.flow_id),
+#             "component_id": ObjectId(request.component_id),
+#             "question": request.query,
+#             "summ": response_json.get("summ", ""),
+#             "df": validate_dataframe(response_json.get("df", [])),
+#             "graph": response_json.get("graph", {}),
+#             "type": "video",
+#             "is_delete": "false",
+#             "timestamp": datetime.datetime.utcnow(),
+#         }
 
-        node_id_response = node_collection.insert_one(node_data)
+#         node_id_response = node_collection.insert_one(node_data)
 
-        question_entries = []
+#         question_entries = []
 
-        question_entries.append(
-            VideoNodeQueryResponse(
-                data={
-                    "question": request.query,
-                    "summ": response_json.get("summ", ""),
-                    "df": validate_dataframe(response_json.get("df", [])),
-                    "graph": response_json.get("graph", {}),
-                    "flow_id": request.flow_id,
-                    "component_id": request.component_id,
-                    "component_type": "video",
-                },
-                id=request.node_id,
-                type="VideoNode",
-            )
-        )
+#         question_entries.append(
+#             VideoNodeQueryResponse(
+#                 data={
+#                     "question": request.query,
+#                     "summ": response_json.get("summ", ""),
+#                     "df": validate_dataframe(response_json.get("df", [])),
+#                     "graph": response_json.get("graph", {}),
+#                     "flow_id": request.flow_id,
+#                     "component_id": request.component_id,
+#                     "component_type": "video",
+#                 },
+#                 id=request.node_id,
+#                 type="VideoNode",
+#             )
+#         )
 
-        if request.request_type == "question":
-            empty_question_entry = VideoNodeQueryResponse(
-                id=str(ObjectId()),
-                data={
-                    "question": "",
-                    "flow_id": request.flow_id,
-                    "component_id": request.component_id,
-                    "component_type": "video",
-                },
-                type="question",
-            )
+#         if request.request_type == "question":
+#             empty_question_entry = VideoNodeQueryResponse(
+#                 id=str(ObjectId()),
+#                 data={
+#                     "question": "",
+#                     "flow_id": request.flow_id,
+#                     "component_id": request.component_id,
+#                     "component_type": "video",
+#                 },
+#                 type="question",
+#             )
 
-            question_entries.append(empty_question_entry)
+#             question_entries.append(empty_question_entry)
 
-        return question_entries
+#         return question_entries
 
-    except Exception as e:
-        print(f"Error in /video-component-qa endpoint: {e}")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+#     except Exception as e:
+#         print(f"Error in /video-component-qa endpoint: {e}")
+#         traceback.print_exc()
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.delete("/soft-delete-node/{node_id}", response_model=dict)
