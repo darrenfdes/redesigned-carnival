@@ -220,7 +220,7 @@ const PDFModal = () => {
                 onChange={handleChange}
             >
                 <option value="">Select...</option>
-                <option value="gpt">OpenAI</option>
+                {/* <option value="gpt">OpenAI</option> */}
                 <option value="aws">AWS Textract</option>
                 <option value="custom">Custom RAG</option>
             </select>
